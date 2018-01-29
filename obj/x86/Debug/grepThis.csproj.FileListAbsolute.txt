@@ -1,0 +1,5 @@
+/home/shane/Projects/grepThis/obj/x86/Debug/grepThis.csproj.CoreCompileInputs.cache
+/home/shane/Projects/grepThis/bin/Debug/grepThis.exe
+/home/shane/Projects/grepThis/bin/Debug/grepThis.pdb
+/home/shane/Projects/grepThis/obj/x86/Debug/grepThis.exe
+/home/shane/Projects/grepThis/obj/x86/Debug/grepThis.pdb
