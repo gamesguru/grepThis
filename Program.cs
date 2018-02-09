@@ -1,30 +1,48 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text.RegularExpressions;
 
 namespace grepThis
 {
     static class MainClass
     {
         static string root = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+        static string slash = Path.DirectorySeparatorChar.ToString();
+        static bool dontPrint;
+        static string query;
+        static string filQuery = "matches.TXT";
+        static List<string> matchingFiles;
         public static void Main(string[] args)
         {
+            settings();
             while (true)
             {
+            	matchingFiles = new List<string>();
                 print("grep this: ");
-                string query = Console.ReadLine();
+                query = Console.ReadLine();
+                filQuery= $"{root}{slash}matches.TXT";
+                //filQuery = "";
+                if (dontPrint)
+                    File.AppendAllText(filQuery, $"grep this: {query}\n");
+                //for (int i = 0; i < query.Length; i++)
+                    //if (Char.IsLetterOrDigit(query[i]))
+                    //    filQuery += query[i];
+                    //else
+                        //filQuery += "";
                 if (String.IsNullOrEmpty(query))
                     try { throw new ArgumentException("the string to find may not be empty", "query"); }
                     catch (Exception e) { print(e.ToString() + "\n"); continue; }
                 foreach (string file in Directory.GetFiles(root, "*.*", SearchOption.AllDirectories))
                 {
                     string[] lines = File.ReadAllLines(file);
-                    for (int i = 0; i < lines.Length; i++)
-                    {
+                    for (int i = 0; i < lines.Length; i++)                    
                         if (lines[i].ToUpper().Contains(query.ToUpper()))
-                                printMatch(file, i, lines[i], query);
-                    }
+                                printMatch(file, i, lines[i], query);                    
+                }
+                if (dontPrint)
+                {
+					println($"\nfound: {matchingFiles.Count} matching files!");
+                    File.AppendAllText(filQuery, $"\nfound: {matchingFiles.Count} matching files!\n\n");
                 }
                 println("\n");
             }
@@ -32,17 +50,28 @@ namespace grepThis
 
         private static void printMatch(string filename, int lineNumber, string line, string query)
         {
+        	if (dontPrint)
+        	{
+                if (filename == filQuery)
+                    return;
+        		if (!matchingFiles.Contains(filename))
+        		{
+        			string str = $"{filename}::Ln{lineNumber}";
+        			matchingFiles.Add(filename);
+                    File.AppendAllText(filQuery, $"{str}\n");
+        		}
+        		return;
+        	}
             print(filename.Replace(root, ""), ConsoleColor.DarkMagenta);
             print(":", ConsoleColor.Blue);
             print(lineNumber.ToString(), ConsoleColor.Green);
             print(":", ConsoleColor.Blue);
 
             List<int> insts = AllIndexesOf(line.ToUpper(), query.ToUpper());
+            
             print(line.Substring(0, insts[0]));
-            print(line.Substring(insts[0], query.Length), ConsoleColor.DarkRed);
-                       
-            for (int i = 0; i < insts.Count; i++)
-            {
+            print(line.Substring(insts[0], query.Length), ConsoleColor.DarkRed);           
+            for (int i = 0; i < insts.Count; i++)            
                 try
                 {
                     print(line.Substring(insts[i] + query.Length, insts[i + 1] - insts[i] - query.Length));
@@ -52,7 +81,7 @@ namespace grepThis
                 {
                     print(line.Substring(insts[i] + query.Length));
                 }
-            }
+            
             println();
         }        
 
@@ -79,6 +108,17 @@ namespace grepThis
             Console.ForegroundColor = color;
             Console.WriteLine(text);
             Console.ResetColor();
+        }
+        
+        static void settings()
+        {
+        	string st = "";
+        	foreach (string s in File.ReadAllLines($"{root}{slash}settings.py"))
+        	{
+        		st = s.Replace("\t", "").Trim();
+        		if (st.StartsWith("[dontPrint]"))
+        			dontPrint= Convert.ToBoolean(st.Replace("[dontPrint]", ""));
+        	}
         }
     }
 }
