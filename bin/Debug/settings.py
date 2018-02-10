@@ -3,8 +3,8 @@
 ##############
 ## Backspace = Pause
 ## Spacebar  = Resume
-## Ctrl + Q  = Abort
-## Ctrl + P  = Toggle print (it always saves a list of matches, limited to the first line number match of that file)
+## Shift + Q  = Abort
+## Shift + P  = Toggle print (it always saves a list of matches, limited to the first line number match of that file)
 #  It is case insensitive without much option for regex, it searches as is.
 
 

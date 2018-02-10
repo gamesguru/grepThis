@@ -7,7 +7,8 @@ namespace grepThis
     static class MainClass
     {
         static string root = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-        static string slash = Path.DirectorySeparatorChar.ToString();
+        static string sl = Path.DirectorySeparatorChar.ToString();
+        static string nl = Environment.NewLine;
         static bool dontPrint;
         static string query;
         static string filQuery = "matches.TXT";
@@ -16,12 +17,13 @@ namespace grepThis
         public static void Main(string[] args)
         {
             settings();
+            printControls();
             while (true)
             {                
                 matchingFiles = new List<string>();
                 print("grep this: ");
                 query = Console.ReadLine();
-                filQuery = $"{root}{slash}matches.TXT";
+                filQuery = $"{root}{sl}matches.TXT";
                 //filQuery = "";
                 if (dontPrint)
                     File.AppendAllText(filQuery, $"grep this: {query}\n");
@@ -35,7 +37,9 @@ namespace grepThis
                     catch (Exception e) { print(e.ToString() + "\n"); continue; }
                 foreach (string file in Directory.GetFiles(root, "*.*", SearchOption.AllDirectories))
                 {
-                top:
+                    if (file == filQuery || file.EndsWith("settings.py"))
+                        continue;
+                    top:
                     if (Console.KeyAvailable)
                     {
                         ConsoleKeyInfo cki = Console.ReadKey();
@@ -57,23 +61,27 @@ namespace grepThis
                     for (int i = 0; i < lines.Length; i++)
                         if (lines[i].ToUpper().Contains(query.ToUpper()))
                         {
-	    					printMatch(file, i, lines[i], query);
+                            printMatch(file, i, lines[i], query);
                             if (dontPrint)
                                 break;
                         }
                 }
-                println($"\rfound: {matchingFiles.Count} matching files!!");
+                if (dontPrint)
+                {
+					foreach (string s in matchingFiles)
+						println(s.Replace(root, ""));
+                    println();          
+                }
+                else
+                    println($"\rfound: {matchingFiles.Count} matching files!!");
                 File.AppendAllText(filQuery, $"\nfound: {matchingFiles.Count} matching files!\n\n");
 
                 println("\n");
             }
         }
 
-        private static void printMatch(string filename, int lineNumber, string line, string query)
+        static void printMatch(string filename, int lineNumber, string line, string query)
         {
-            if (filename == filQuery || filename == "settings.py")
-                return;
-
             if (!matchingFiles.Contains(filename))
             {
                 string str = $"{filename}::Ln{lineNumber}";
@@ -122,13 +130,13 @@ namespace grepThis
             }
         }
         
-        private static void print(string text = "", ConsoleColor color = ConsoleColor.White)
+        static void print(string text = "", ConsoleColor color = ConsoleColor.White)
         {
             Console.ForegroundColor = color;
             Console.Write(text);
             Console.ResetColor();
         }
-        private static void println(string text = "", ConsoleColor color = ConsoleColor.White)
+        static void println(string text = "", ConsoleColor color = ConsoleColor.White)
         {
             Console.ForegroundColor = color;
             Console.WriteLine(text);
@@ -138,12 +146,22 @@ namespace grepThis
         static void settings()
         {
         	string st = "";
-        	foreach (string s in File.ReadAllLines($"{root}{slash}settings.py"))
+        	foreach (string s in File.ReadAllLines($"{root}{sl}settings.py"))
         	{
         		st = s.Replace("\t", "").Trim();
         		if (st.StartsWith("[dontPrint]"))
         			dontPrint= Convert.ToBoolean(st.Replace("[dontPrint]", ""));
         	}
+        }
+        static void printControls()
+        {
+            println("Welcome to grep for windows, by Shane");
+            println($"{nl}##############{nl}## CONTROLS ##{nl}##############");
+            println("## Backspace = Pause");
+            println("## Spacebar  = Resume");
+            println("## Shift + Q  = Abort");
+            println("## Shift + P  = Toggle print (it always saves a list of matches, limited to the first line number match of that file)");
+            println($"## It is case insensitive without much option for regex, it searches as is.{nl}");
         }
     }
 }
