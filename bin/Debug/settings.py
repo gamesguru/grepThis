@@ -14,7 +14,8 @@
 ##############################
 [dontPrint]	false
 #[dir]		$root
-[dir]		/media/shane/RaptorWS/ocLogs
+[dir]		/media/shane/RaptorWS/ocLogs/Feb10_744PM
+#[dir]		/media/shane/RaptorWS/ocLogs
 #[dir]		C:/users/administrator/desktop/ocast_newest/bin/debug/logs
 
 #non-functional at the moment
